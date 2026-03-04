@@ -1,0 +1,93 @@
+name: CI Pipeline - Windows
+
+on:
+  pull_request:
+    branches: [ main, master ]
+  push:
+    branches: [ main, master ]
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Gitleaks scan
+      uses: gitleaks/gitleaks-action@v2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_REF: ${{ github.ref }}
+
+  test:
+    runs-on: windows-latest
+    needs: security-scan
+    
+    strategy:
+      matrix:
+        python-version: [3.11]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install black flake8 pytest pytest-cov pytest-asyncio mypy
+
+    - name: Check code formatting with Black
+      run: |
+        black --check --diff .
+
+    - name: Lint with flake8
+      run: |
+        flake8 . --select=E9,F63,F7,F82 --show-source --statistics
+
+    - name: Type checking with mypy
+      run: |
+        mypy . --ignore-missing-imports --no-strict-optional
+
+    - name: Run tests with pytest
+      run: |
+        pytest --cov=. --cov-report=term-missing --cov-report=xml --cov-report=html
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+
+    - name: Archive test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: test-results
+        path: |
+          htmlcov/
+          coverage.xml
+
+    - name: Archive coverage report
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: coverage-report
+        path: htmlcov/
