@@ -118,6 +118,113 @@ def is_valid_url(url: Optional[str]) -> bool:
     return bool(re.match(pattern, url))
 
 
+def format_timestamp(dt: Optional[datetime]) -> Optional[str]:
+    """Format datetime to ISO string"""
+    if dt is None:
+        return None
+    if isinstance(dt, str):
+        return dt
+    return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def get_time_ago(dt: Optional[datetime]) -> str:
+    """Get human-readable time difference"""
+    if dt is None:
+        return "Unknown"
+    
+    now = datetime.now()
+    diff = now - dt
+    
+    if diff.days > 0:
+        return f"{diff.days} day{'s' if diff.days > 1 else ''} ago"
+    elif diff.seconds >= 3600:
+        hours = diff.seconds // 3600
+        return f"{hours} hour{'s' if hours > 1 else ''} ago"
+    elif diff.seconds >= 60:
+        minutes = diff.seconds // 60
+        return f"{minutes} minute{'s' if minutes > 1 else ''} ago"
+    else:
+        return "just now"
+
+
+def snake_to_camel(text: str) -> str:
+    """Convert snake_case to camelCase"""
+    parts = text.split('_')
+    return parts[0] + ''.join(p.capitalize() for p in parts[1:])
+
+
+def camel_to_snake(text: str) -> str:
+    """Convert camelCase to snake_case"""
+    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', text)
+    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+
+
+def ensure_directory_exists(path: str) -> None:
+    """Create directory if it doesn't exist"""
+    from pathlib import Path
+    Path(path).mkdir(parents=True, exist_ok=True)
+
+
+def get_file_size(path: str) -> int:
+    """Get file size in bytes"""
+    from pathlib import Path
+    return Path(path).stat().st_size
+
+
+def round_to_decimal(value: Union[int, float], decimal_places: int) -> float:
+    """Round to N decimal places"""
+    return round(float(value), decimal_places)
+
+
+def calculate_average(numbers: List[Union[int, float]]) -> float:
+    """Calculate average of numbers"""
+    if not numbers:
+        return 0
+    return sum(numbers) / len(numbers)
+
+
+def calculate_standard_deviation(numbers: List[Union[int, float]]) -> float:
+    """Calculate standard deviation"""
+    if not numbers or len(numbers) < 2:
+        return 0
+    avg = calculate_average(numbers)
+    variance = sum((x - avg) ** 2 for x in numbers) / len(numbers)
+    return variance ** 0.5
+
+
+def generate_uuid() -> str:
+    """Generate UUID string"""
+    return str(uuid.uuid4())
+
+
+async def make_http_request(url: str) -> Dict[str, Any]:
+    """Make async HTTP request"""
+    import aiohttp
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as response:
+            return await response.json()
+
+
+def build_url_with_params(base_url: str, params: Dict[str, str]) -> str:
+    """Build URL with query parameters"""
+    if not params:
+        return base_url
+    query_string = "&".join(f"{k}={v}" for k, v in params.items())
+    return f"{base_url}?{query_string}"
+
+
+def read_json_file(filepath: str) -> Dict[str, Any]:
+    """Read JSON file"""
+    with open(filepath, 'r') as f:
+        return json.load(f)
+
+
+def write_json_file(filepath: str, data: Dict[str, Any]) -> None:
+    """Write JSON file"""
+    with open(filepath, 'w') as f:
+        json.dump(data, f, indent=2)
+
+
 def is_positive_number(value: Any) -> bool:
     """Check if value is a positive number"""
     try:

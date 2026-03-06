@@ -111,6 +111,37 @@ async def get_app():
         yield platform.orchestrator.app if platform.orchestrator else None
 
 
+# Create and export FastAPI app for tests
+app = FastAPI(
+    title="Trading Control Platform",
+    description="OpenClaw-powered trading analysis platform",
+    version="1.0.0"
+)
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Include API routes
+app.include_router(api_router)
+
+# Setup lifespan
+@asynccontextmanager
+async def lifespan_manager(app: FastAPI):
+    """Lifespan context manager for startup/shutdown"""
+    await platform.initialize()
+    await platform.start()
+    yield
+    await platform.stop()
+
+app.router.lifespan_context = lifespan_manager
+
+
 if __name__ == "__main__":
     import uvicorn
     

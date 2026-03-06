@@ -1232,3 +1232,19 @@ async def initialize_memory():
     """Initialize memory system"""
     manager = get_memory_manager()
     await manager.initialize()
+
+
+# Backward compatibility exports
+PersistentMemory = PersistentTradeMemory
+FallbackStorage = ShortTermMemory
+
+__all__ = [
+    "MemoryManager",
+    "PersistentTradeMemory",
+    "PersistentMemory",
+    "PerformanceMemory",
+    "ShortTermMemory",
+    "FallbackStorage",
+    "get_memory_manager",
+    "initialize_memory",
+]

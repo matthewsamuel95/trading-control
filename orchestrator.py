@@ -42,3 +42,8 @@ class OpenClawOrchestrator(TradingOrchestrator):
     async def _run_cycle(self) -> None:
         """Run a single orchestration cycle"""
         pass
+
+
+def get_tool_registry() -> Dict[str, Any]:
+    """Get tool registry for testing"""
+    return {}
