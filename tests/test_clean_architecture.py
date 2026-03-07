@@ -137,7 +137,7 @@ def test_configuration():
 # Test API endpoints (basic)
 def test_api_endpoints():
     """Test API endpoints are properly defined"""
-    from fastapi.testclient import TestClient
+    from starlette.testclient import TestClient
 
     from main import app
 
