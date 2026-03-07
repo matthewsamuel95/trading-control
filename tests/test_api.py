@@ -9,7 +9,14 @@ from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from starlette.testclient import TestClient
+try:
+    from starlette.testclient import TestClient
+    TESTCLIENT_AVAILABLE = True
+except ImportError:
+    TESTCLIENT_AVAILABLE = False
+
+# Import httpx as fallback for CI
+import httpx
 
 # Add parent directory to Python path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -174,11 +181,21 @@ class TestAPIEndpoints:
         from main import TradingControlPlatform, app
 
         # Try different TestClient constructor patterns for CI compatibility
-        try:
-            return TestClient(app)
-        except TypeError:
-            # Fallback for older Starlette versions
-            return TestClient(app=app)
+        if TESTCLIENT_AVAILABLE:
+            try:
+                return TestClient(app)
+            except TypeError:
+                try:
+                    # Fallback for older Starlette versions
+                    return TestClient(app=app)
+                except TypeError:
+                    # Final fallback - use httpx client
+                    import asyncio
+                    from fastapi.testclient import TestClient as FastAPITestClient
+                    return FastAPITestClient(app)
+        else:
+            # Use httpx client as last resort
+            return httpx.Client(app=app)
 
     def test_root_endpoint(self, client):
         """Test root endpoint"""
@@ -449,11 +466,21 @@ class TestAPIErrorHandling:
         from main import app
 
         # Try different TestClient constructor patterns for CI compatibility
-        try:
-            return TestClient(app)
-        except TypeError:
-            # Fallback for older Starlette versions
-            return TestClient(app=app)
+        if TESTCLIENT_AVAILABLE:
+            try:
+                return TestClient(app)
+            except TypeError:
+                try:
+                    # Fallback for older Starlette versions
+                    return TestClient(app=app)
+                except TypeError:
+                    # Final fallback - use httpx client
+                    import asyncio
+                    from fastapi.testclient import TestClient as FastAPITestClient
+                    return FastAPITestClient(app)
+        else:
+            # Use httpx client as last resort
+            return httpx.Client(app=app)
 
     def test_invalid_json_handling(self, client):
         """Test handling of invalid JSON"""
@@ -554,11 +581,21 @@ class TestAPIIntegration:
         from main import app
 
         # Try different TestClient constructor patterns for CI compatibility
-        try:
-            return TestClient(app)
-        except TypeError:
-            # Fallback for older Starlette versions
-            return TestClient(app=app)
+        if TESTCLIENT_AVAILABLE:
+            try:
+                return TestClient(app)
+            except TypeError:
+                try:
+                    # Fallback for older Starlette versions
+                    return TestClient(app=app)
+                except TypeError:
+                    # Final fallback - use httpx client
+                    import asyncio
+                    from fastapi.testclient import TestClient as FastAPITestClient
+                    return FastAPITestClient(app)
+        else:
+            # Use httpx client as last resort
+            return httpx.Client(app=app)
 
     def test_cors_headers(self, client):
         """Test CORS headers are present"""
