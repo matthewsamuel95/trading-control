@@ -174,7 +174,7 @@ class TestPersistentMemory:
         #     "stop_price": 145.0,
         #     "confidence": 0.85,
         # }
-        
+
         # # Store trade using async method
         # from memory import TradeRecord
         # from datetime import datetime
@@ -193,7 +193,7 @@ class TestPersistentMemory:
         #     status="pending"
         # )
         # await persistent_memory.store_trade(trade)
-        
+
         # # Retrieve trades
         # trades = await persistent_memory.get_trade_records("AAPL", limit=10)
         # assert len(trades) >= 1
@@ -211,13 +211,13 @@ class TestPersistentMemory:
             "output": {"signal": "BUY", "confidence": 0.87},
             "timestamp": "2024-03-04T15:30:00Z",
         }
-        
+
         # Call with correct parameters
         result = await persistent_memory.store_agent_output(
-            symbol="AAPL", 
-            run_id="task_001", 
-            agent_name="technical_analyst_001", 
-            output=agent_output
+            symbol="AAPL",
+            run_id="task_001",
+            agent_name="technical_analyst_001",
+            output=agent_output,
         )
 
         # Verify storage succeeded
@@ -235,9 +235,9 @@ class TestPersistentMemory:
         # Store agent output
         persistent_memory.store_agent_output(
             symbol="AAPL",
-            run_id="run_001", 
+            run_id="run_001",
             agent_name="technical_analyst_001",
-            output=agent_output
+            output=agent_output,
         )
 
         # Get performance

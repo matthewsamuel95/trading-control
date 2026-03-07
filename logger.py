@@ -24,7 +24,9 @@ class ColoredFormatter(logging.Formatter):
     RESET = "\033[0m"
 
     def __init__(self, fmt=None):
-        super().__init__(fmt or "%(asctime)s | %(name)s | %(levelname)s | %(message)s (%(lineno)d)")
+        super().__init__(
+            fmt or "%(asctime)s | %(name)s | %(levelname)s | %(message)s (%(lineno)d)"
+        )
 
     def format(self, record):
         log_color = self.COLORS.get(record.levelname, self.RESET)
@@ -44,12 +46,14 @@ class LogPerformance:
 
     def __enter__(self):
         from datetime import datetime
+
         self.start_time = datetime.now().timestamp()
         self.logger.debug(f"Starting {self.operation}")
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         from datetime import datetime
+
         self.end_time = datetime.now().timestamp()
         self.duration = self.end_time - self.start_time
         self.logger.debug(f"Completed {self.operation} in {self.duration:.3f}s")
@@ -67,21 +71,22 @@ def setup_logging(
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         filename=log_file,
     )
-    
+
     # If log_file is specified, ensure it's created by writing a test message
     if log_file:
         import os
         from pathlib import Path
+
         log_path = Path(log_file)
         os.makedirs(log_path.parent, exist_ok=True)
-        
+
         # Create the file manually to ensure it exists
         log_path.touch()
-        
+
         # Write a test message to ensure file is created
         logger = logging.getLogger(__name__)
         logger.info("Logging initialized")
-        
+
         # Force flush to ensure file is written
         root_logger = logging.getLogger()
         for handler in root_logger.handlers:
@@ -98,7 +103,7 @@ def configure_specific_loggers() -> None:
     logging.getLogger("urllib3").setLevel(logging.WARNING)
     logging.getLogger("httpx").setLevel(logging.WARNING)
     logging.getLogger("asyncio").setLevel(logging.WARNING)
-    
+
     # Set application loggers to DEBUG level
     logging.getLogger("services").setLevel(logging.DEBUG)
     logging.getLogger("core").setLevel(logging.DEBUG)
@@ -138,22 +143,27 @@ def log_structured(logger: logging.Logger, level, message: str, **kwargs) -> Non
         level_name = level.lower()
     else:
         level_name = logging.getLevelName(level).lower()
-    
+
     getattr(logger, level_name)(f"{message} | Context: {log_data}")
 
 
 def monitor_performance(threshold_ms=None):
     """Decorator to monitor function performance"""
+
     def decorator(func):
         def wrapper(*args, **kwargs):
             logger = get_logger(func.__module__)
             with LogPerformance(logger, f"{func.__name__} execution"):
                 result = func(*args, **kwargs)
                 # Check threshold if provided
-                if threshold_ms and hasattr(LogPerformance, 'duration'):
+                if threshold_ms and hasattr(LogPerformance, "duration"):
                     duration_ms = LogPerformance.duration * 1000
                     if duration_ms > threshold_ms:
-                        logger.warning(f"Function {func.__name__} exceeded threshold: {duration_ms:.2f}ms > {threshold_ms}ms")
+                        logger.warning(
+                            f"Function {func.__name__} exceeded threshold: {duration_ms:.2f}ms > {threshold_ms}ms"
+                        )
                 return result
+
         return wrapper
+
     return decorator

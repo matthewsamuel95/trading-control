@@ -795,7 +795,11 @@ class PersistentTradeMemory(BaseMemoryLayer):
                         (
                             trade.id,
                             trade.symbol,
-                            json.dumps(trade.recommendation_json) if hasattr(trade, 'recommendation_json') else "{}",
+                            (
+                                json.dumps(trade.recommendation_json)
+                                if hasattr(trade, "recommendation_json")
+                                else "{}"
+                            ),
                             trade.entry_price,
                             trade.target_price,
                             trade.stop_price,
@@ -950,11 +954,13 @@ class PersistentTradeMemory(BaseMemoryLayer):
     async def exists(self, key: str) -> bool:
         """Not used for persistent memory"""
         return False
-        
-    async def get_trade_records(self, symbol: str, limit: int = 100) -> List[Dict[str, Any]]:
+
+    async def get_trade_records(
+        self, symbol: str, limit: int = 100
+    ) -> List[Dict[str, Any]]:
         """Get trade records for a symbol"""
         await self._initialize()
-        
+
         if self._connected:
             try:
                 with sqlite3.connect(self.db_path) as conn:
@@ -968,26 +974,30 @@ class PersistentTradeMemory(BaseMemoryLayer):
                     )
                     trades = []
                     for row in cursor.fetchall():
-                        trades.append({
-                            "id": row[0],
-                            "symbol": row[1],
-                            "recommendation_json": row[2],
-                            "entry_price": float(row[3]),
-                            "target_price": float(row[4]),
-                            "stop_price": float(row[5]),
-                            "confidence": row[6],
-                            "created_at": row[7],
-                            "closed_at": row[8],
-                            "result": row[9],
-                            "grade": row[10],
-                            "status": row[11],
-                        })
+                        trades.append(
+                            {
+                                "id": row[0],
+                                "symbol": row[1],
+                                "recommendation_json": row[2],
+                                "entry_price": float(row[3]),
+                                "target_price": float(row[4]),
+                                "stop_price": float(row[5]),
+                                "confidence": row[6],
+                                "created_at": row[7],
+                                "closed_at": row[8],
+                                "result": row[9],
+                                "grade": row[10],
+                                "status": row[11],
+                            }
+                        )
                     return trades
             except Exception:
                 return []
         return []
-        
-    async def store_agent_output(self, symbol: str, run_id: str, agent_name: str, output: Dict[str, Any]) -> bool:
+
+    async def store_agent_output(
+        self, symbol: str, run_id: str, agent_name: str, output: Dict[str, Any]
+    ) -> bool:
         """Store agent output"""
         key = f"agent_output:{symbol}:{run_id}:{agent_name}"
         return await self.store(key, output, ttl=3600)
@@ -1016,14 +1026,17 @@ class PerformanceMemory(BaseMemoryLayer):
         self.persistent_memory = persistent_memory
         self.agent_performance = {}  # Store agent performance data
         self.historical_accuracy = {}  # Store historical accuracy data
-        
-    def update_agent_performance(self, agent_id: str, performance_metrics: Dict[str, Any]) -> None:
+
+    def update_agent_performance(
+        self, agent_id: str, performance_metrics: Dict[str, Any]
+    ) -> None:
         """Update agent performance metrics"""
         # Store performance metrics for learning
         self.agent_performance[agent_id] = performance_metrics
-        
+
         # Create AgentPerformance object from metrics
         from datetime import datetime
+
         performance_obj = AgentPerformance(
             agent_name=agent_id,
             historical_accuracy=performance_metrics.get("accuracy", 0.0),
@@ -1034,12 +1047,12 @@ class PerformanceMemory(BaseMemoryLayer):
             successful_trades=performance_metrics.get("successful_trades", 0),
             last_updated=datetime.now(),
         )
-        
+
         # Update cache
-        self._cache = getattr(self, '_cache', {})
+        self._cache = getattr(self, "_cache", {})
         self._cache_ttl = 300  # 5 minutes cache
         self._cache[agent_id] = performance_obj
-        
+
     def get_historical_accuracy(self, agent_id: str) -> Dict[str, float]:
         """Get historical accuracy for an agent"""
         if agent_id in self.agent_performance:

@@ -36,7 +36,7 @@ class TestOpenClawOrchestrator:
             return orchestrator.OpenClawOrchestrator(
                 memory=mock_memory.return_value,
                 tools=mock_tools.return_value,
-                task_queue=mock_tasks.return_value
+                task_queue=mock_tasks.return_value,
             )
 
     def test_orchestrator_initialization(self, orchestrator_instance):
@@ -98,7 +98,7 @@ class TestTradingCycle:
             return orchestrator.OpenClawOrchestrator(
                 memory=mock_memory.return_value,
                 tools=mock_tools.return_value,
-                task_queue=mock_tasks.return_value
+                task_queue=mock_tasks.return_value,
             )
 
     @pytest.mark.asyncio
@@ -493,7 +493,7 @@ class TestOrchestratorIntegration:
             return orchestrator.OpenClawOrchestrator(
                 memory=mock_memory.return_value,
                 tools=mock_tools.return_value,
-                task_queue=mock_tasks.return_value
+                task_queue=mock_tasks.return_value,
             )
 
     @pytest.mark.asyncio

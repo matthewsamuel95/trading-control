@@ -44,18 +44,20 @@ class OpenClawOrchestrator(TradingOrchestrator):
         self.memory = memory
         self.tools = tools
         self.task_queue = task_queue
-        
+
         # Use provided dependencies or get them for compatibility
         if tools is not None:
             self.tool_registry = tools
         else:
             from orchestrator import get_tool_registry
+
             self.tool_registry = get_tool_registry()
-            
+
         if memory is not None:
             self.memory_manager = memory
         else:
             from orchestrator import get_memory_manager
+
             self.memory_manager = get_memory_manager()
         self.agents = {}
         self.active_cycles = {}
@@ -188,11 +190,11 @@ class OpenClawOrchestrator(TradingOrchestrator):
             self.active_cycles[cycle_id]["signals_generated"] = signals_generated
             self.active_cycles[cycle_id]["tasks_executed"] = tasks_executed
             self.active_cycles[cycle_id]["completed_at"] = datetime.now().isoformat()
-            
+
             # Clear current cycle if it matches
             if self.current_cycle_id == cycle_id:
                 self.current_cycle_id = None
-                
+
             return True
         return False
 
@@ -211,7 +213,7 @@ class OpenClawOrchestrator(TradingOrchestrator):
         # Check if already running
         if self.is_running and self.current_cycle_id:
             return self.current_cycle_id
-            
+
         cycle_id = f"cycle_{len(self.active_cycles) + 1}"
         self.current_cycle_id = cycle_id
         self.active_cycles[cycle_id] = {
@@ -232,10 +234,11 @@ class OpenClawOrchestrator(TradingOrchestrator):
             "processing_tasks": 0,
             "completed_tasks": 0,
         }
-        
+
     def start(self) -> None:
         """Sync wrapper for async start"""
         import asyncio
+
         try:
             loop = asyncio.get_event_loop()
             if loop.is_running():
@@ -246,10 +249,11 @@ class OpenClawOrchestrator(TradingOrchestrator):
         except Exception:
             # If async fails, set is_running manually for test compatibility
             self.is_running = True
-            
+
     def stop(self) -> None:
         """Sync wrapper for async stop"""
         import asyncio
+
         try:
             loop = asyncio.get_event_loop()
             if loop.is_running():

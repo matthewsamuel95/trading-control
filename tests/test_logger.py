@@ -233,10 +233,11 @@ class TestMonitorPerformance:
         """Fast function for testing"""
         return "fast_result"
 
-    @monitor_performance()  
+    @monitor_performance()
     def slow_function(self):
         """Slow function for testing"""
         import time
+
         time.sleep(0.1)  # Sleep to make it slow
         return "slow_result"
 
@@ -288,7 +289,7 @@ class TestLoggerIntegration:
         """Test logger level inheritance"""
         # Reset logging configuration
         logging.getLogger().handlers.clear()
-        
+
         setup_logging(level="WARNING")
 
         parent_logger = get_logger("parent")
@@ -296,13 +297,15 @@ class TestLoggerIntegration:
 
         # Child should inherit parent's level unless explicitly set
         assert parent_logger.getEffectiveLevel() == logging.WARNING
-        assert child_logger.getEffectiveLevel() == logging.WARNING  # Both should be same level
+        assert (
+            child_logger.getEffectiveLevel() == logging.WARNING
+        )  # Both should be same level
 
     def test_logger_effective_level(self):
         """Test logger effective level calculation"""
         # Reset logging configuration
         logging.getLogger().handlers.clear()
-        
+
         setup_logging(level="ERROR")
 
         logger = get_logger("test")
@@ -319,10 +322,10 @@ class TestLoggerEdgeCases:
         """Test setup with invalid logging level"""
         # Reset logging configuration
         logging.getLogger().handlers.clear()
-        
+
         # Should default to INFO level for invalid input
         setup_logging(level="INVALID_LEVEL")
-        
+
         # Verify it defaulted to INFO
         root_logger = logging.getLogger()
         assert root_logger.level == logging.INFO

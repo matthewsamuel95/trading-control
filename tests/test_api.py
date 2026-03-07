@@ -9,8 +9,10 @@ from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+
 try:
     from starlette.testclient import TestClient
+
     TESTCLIENT_AVAILABLE = True
 except ImportError:
     TESTCLIENT_AVAILABLE = False
@@ -175,17 +177,21 @@ class TestAPIModels:
 # TODO: Fix TestClient compatibility for CI environment
 # All API tests temporarily disabled due to CI TestClient compatibility issues
 
+
 # Temporary placeholder tests to maintain test count
 def test_api_endpoints_placeholder():
     """Placeholder for API endpoints tests"""
     assert True
 
+
 def test_api_error_handling_placeholder():
     """Placeholder for API error handling tests"""
     assert True
 
+
 def test_api_integration_placeholder():
     """Placeholder for API integration tests"""
     assert True
+
 
 # End of placeholder tests
