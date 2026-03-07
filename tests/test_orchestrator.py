@@ -33,7 +33,11 @@ class TestOpenClawOrchestrator:
             mock_memory.return_value = MagicMock()
             mock_tasks.return_value = MagicMock()
 
-            return orchestrator.OpenClawOrchestrator()
+            return orchestrator.OpenClawOrchestrator(
+                memory=mock_memory.return_value,
+                tools=mock_tools.return_value,
+                task_queue=mock_tasks.return_value
+            )
 
     def test_orchestrator_initialization(self, orchestrator_instance):
         """Test orchestrator initializes correctly"""
@@ -91,7 +95,11 @@ class TestTradingCycle:
             mock_memory.return_value = MagicMock()
             mock_tasks.return_value = MagicMock()
 
-            return orchestrator.OpenClawOrchestrator()
+            return orchestrator.OpenClawOrchestrator(
+                memory=mock_memory.return_value,
+                tools=mock_tools.return_value,
+                task_queue=mock_tasks.return_value
+            )
 
     @pytest.mark.asyncio
     async def test_start_trading_cycle(self, orchestrator_instance):
@@ -143,6 +151,11 @@ class TestTradingCycle:
 
         # Set up active cycle
         orchestrator_instance.current_cycle_id = cycle_id
+        orchestrator_instance.active_cycles[cycle_id] = {
+            "symbols": ["AAPL", "GOOGL"],
+            "started_at": "2023-01-01T00:00:00",
+            "status": "running",
+        }
 
         # Mock successful completion
         orchestrator_instance.memory_manager.performance_memory.update_agent_performance = (
@@ -163,6 +176,11 @@ class TestTradingCycle:
 
         # Set up active cycle
         orchestrator_instance.current_cycle_id = cycle_id
+        orchestrator_instance.active_cycles[cycle_id] = {
+            "symbols": ["AAPL"],
+            "started_at": "2023-01-01T00:00:00",
+            "status": "running",
+        }
 
         result = await orchestrator_instance.complete_trading_cycle(
             cycle_id, success=False, signals_generated=0, tasks_executed=2
@@ -208,8 +226,10 @@ class TestTaskExecution:
         # Mock task
         mock_task = MagicMock()
         mock_task.task_id = "task_001"
+        mock_task.task_type = MagicMock()
         mock_task.task_type.value = "analyze_symbol"
         mock_task.input_data = {"symbol": "AAPL"}
+        mock_task.timeout_seconds = 60
 
         # Mock tool
         mock_tool = AsyncMock()
@@ -231,8 +251,10 @@ class TestTaskExecution:
         # Mock task
         mock_task = MagicMock()
         mock_task.task_id = "task_002"
+        mock_task.task_type = MagicMock()
         mock_task.task_type.value = "get_stock_quote"
         mock_task.input_data = {"symbol": "INVALID"}
+        mock_task.timeout_seconds = 60
 
         # Mock tool that raises exception
         mock_tool = AsyncMock()
@@ -468,7 +490,11 @@ class TestOrchestratorIntegration:
             mock_memory.return_value = MagicMock()
             mock_tasks.return_value = MagicMock()
 
-            return orchestrator.OpenClawOrchestrator()
+            return orchestrator.OpenClawOrchestrator(
+                memory=mock_memory.return_value,
+                tools=mock_tools.return_value,
+                task_queue=mock_tasks.return_value
+            )
 
     @pytest.mark.asyncio
     async def test_full_trading_cycle_workflow(self, orchestrator_instance):
