@@ -10,7 +10,7 @@ from .stateful_logging_system import (
 
 from .config import get_settings
 from .logger import get_logger
-from .models import BaseModel, TradingModel
+from .models import BaseModel
 from .main import main
 
 __all__ = [
@@ -20,5 +20,5 @@ __all__ = [
     'create_stateful_logging_system',
     
     # Core utilities
-    'get_settings', 'get_logger', 'BaseModel', 'TradingModel', 'main'
+    'get_settings', 'get_logger', 'BaseModel', 'main'
 ]

@@ -1,6 +1,5 @@
 """
-Main Application - Clean Production-Ready OpenClaw Platform
-No old references, robust architecture, proper organization
+Main Application - Clean Production-Ready Trading System
 """
 
 from __future__ import annotations
@@ -12,29 +11,25 @@ from typing import Any, Dict, Optional
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-# Import OpenClaw components
-from orchestrator import OpenClawOrchestrator
-from tools import get_tool_registry, initialize_tools
-from memory import get_memory_manager, initialize_memory
-from tasks import get_task_queue, initialize_tasks
-from api.routes import api_router
-from logger import get_logger, setup_logging
-
-# Import configuration
-from config import get_settings
+# Import new system components
+from ..system.professional_trading_orchestrator import create_professional_orchestrator
+from ..agents.deterministic_trading_system import create_deterministic_trading_system
+from .stateful_logging_system import create_stateful_logging_system
+from .logger import get_logger, setup_logging
+from .config import get_settings
 
 logger = get_logger(__name__)
 
 
 class TradingControlPlatform:
-    """Clean, robust trading control platform with OpenClaw integration"""
+    """Clean, robust trading control platform with modern architecture"""
 
     def __init__(self):
         self.settings = get_settings()
-        self.orchestrator: Optional[OpenClawOrchestrator] = None
-        self.tool_registry = get_tool_registry()
-        self.memory_manager = get_memory_manager()
-        self.task_queue = get_task_queue()
+        self.orchestrator = None
+        self.agent_system = None
+        self.db_manager = None
+        self.logger = None
         self.is_running = False
         self.background_tasks = set()
 
@@ -42,21 +37,17 @@ class TradingControlPlatform:
         """Initialize all platform components"""
         logger.info("Initializing Trading Control Platform...")
 
-        # Initialize memory system
-        await initialize_memory()
-        logger.info("✅ Memory system initialized")
+        # Initialize logging system
+        self.db_manager, self.logger, test_manager = create_stateful_logging_system()
+        logger.info("✅ Logging system initialized")
 
-        # Initialize tool registry
-        await initialize_tools()
-        logger.info("✅ Tool registry initialized")
+        # Initialize agent system
+        self.agent_system = create_deterministic_trading_system()
+        logger.info("✅ Agent system initialized")
 
         # Initialize orchestrator
-        self.orchestrator = OpenClawOrchestrator(
-            memory=self.memory_manager,
-            tools=self.tool_registry,
-            task_queue=self.task_queue,
-        )
-        logger.info("✅ OpenClaw orchestrator initialized")
+        self.orchestrator = create_professional_orchestrator()
+        logger.info("✅ Professional orchestrator initialized")
 
         logger.info("🚀 Trading Control Platform initialized successfully")
 
@@ -70,7 +61,8 @@ class TradingControlPlatform:
 
         # Start orchestrator
         if self.orchestrator:
-            await self.orchestrator.start()
+            # Run initial cycle
+            await self.orchestrator.run_trading_cycle()
 
         self.is_running = True
         logger.info("✅ Trading Control Platform started")
@@ -83,11 +75,11 @@ class TradingControlPlatform:
 
         logger.info("Stopping Trading Control Platform...")
 
-        # Stop orchestrator
-        if self.orchestrator:
-            await self.orchestrator.stop()
-
         # Cancel background tasks
+        for task in self.background_tasks:
+            task.cancel()
+
+        self.is_running = False
         logger.info("✅ Trading Control Platform stopped")
 
     @asynccontextmanager
@@ -108,20 +100,32 @@ platform = TradingControlPlatform()
 async def get_app():
     """Get FastAPI application with lifespan management"""
     async with platform.lifespan():
-        yield platform.orchestrator.app if platform.orchestrator else None
+        # Create simple FastAPI app for testing
+        app = FastAPI(title="Trading Control Platform")
+        
+        @app.get("/health")
+        async def health_check():
+            return {"status": "healthy", "running": platform.is_running}
+        
+        yield app
 
 
-if __name__ == "__main__":
-    import uvicorn
-    
+async def main():
+    """Main application entry point"""
     # Setup logging
     setup_logging()
     
-    # Run the application
-    uvicorn.run(
-        "main:get_app",
-        host="0.0.0.0",
-        port=8000,
-        reload=True,
-        log_level="info"
-    )
+    # Initialize and start platform
+    await platform.initialize()
+    
+    try:
+        # Keep platform running
+        while platform.is_running:
+            await asyncio.sleep(1)
+    except KeyboardInterrupt:
+        logger.info("Shutting down...")
+        await platform.stop()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

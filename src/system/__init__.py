@@ -8,8 +8,7 @@ from .professional_trading_orchestrator import (
 )
 
 from .production_trading_system import (
-    ProductionTradingAPI, ProductionTradingSystem,
-    create_trading_orchestrator
+    ProductionTradingAPI, ProductionTradingSystem
 )
 
 from .claude_code_template import (
@@ -23,7 +22,6 @@ __all__ = [
     
     # Production system
     'ProductionTradingAPI', 'ProductionTradingSystem',
-    'create_trading_orchestrator',
     
     # Claude integration
     'TradingSystemClaudeTemplate', 'create_trading_template'

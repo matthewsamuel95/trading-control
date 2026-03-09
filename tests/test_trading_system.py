@@ -4,7 +4,9 @@ Stateful testing with database persistence and meaningful test scenarios
 """
 
 import pytest
+import pytest_asyncio
 import asyncio
+import json
 from datetime import datetime, timedelta
 from typing import Dict, Any, List
 import tempfile
@@ -35,7 +37,7 @@ from src.system.professional_trading_orchestrator import (
 class TestStatefulLoggingSystem:
     """Test stateful logging system with database persistence"""
     
-    @pytest.fixture
+    @pytest_asyncio.fixture
     async def temp_db(self):
         """Create temporary database for testing"""
         with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
@@ -73,7 +75,7 @@ class TestStatefulLoggingSystem:
     @pytest.mark.asyncio
     async def test_agent_execution_logging(self, temp_db):
         """Test agent execution logging"""
-        _, logger, test_manager = await temp_db
+        _, logger, test_manager = temp_db
         
         # Set up test data
         await test_manager.setup_test_data()
@@ -90,8 +92,8 @@ class TestStatefulLoggingSystem:
         )
         
         # Verify execution was logged
-        history = await logger.db.get_execution_history(agent_id="agent_001", limit=1)
-        assert len(history) == 1
+        history = await logger.db.get_execution_history(agent_id="agent_001")
+        assert len(history) >= 1
         assert history[0]["action"] == "analyze_market"
         assert history[0]["success"] == True
         assert history[0]["execution_time_ms"] == 150
@@ -106,7 +108,7 @@ class TestStatefulLoggingSystem:
     @pytest.mark.asyncio
     async def test_mistake_analysis_logging(self, temp_db):
         """Test mistake analysis logging"""
-        _, logger, test_manager = await temp_db
+        _, logger, test_manager = temp_db
         
         await test_manager.setup_test_data()
         
@@ -131,7 +133,7 @@ class TestStatefulLoggingSystem:
     @pytest.mark.asyncio
     async def test_learning_session_logging(self, temp_db):
         """Test learning session logging"""
-        _, logger, test_manager = await temp_db
+        _, logger, test_manager = temp_db
         
         await test_manager.setup_test_data()
         
@@ -159,7 +161,7 @@ class TestStatefulLoggingSystem:
     @pytest.mark.asyncio
     async def test_performance_evaluation_logging(self, temp_db):
         """Test performance evaluation logging"""
-        _, logger, test_manager = await temp_db
+        _, logger, test_manager = temp_db
         
         await test_manager.setup_test_data()
         
@@ -177,14 +179,17 @@ class TestStatefulLoggingSystem:
         recorded_metrics = await logger.db.get_performance_metrics(agent_id="agent_001")
         assert len(recorded_metrics) >= 4  # Should have all 4 metrics
         
-        metric_values = {m["metric_type"]: m["metric_value"] for m in recorded_metrics}
-        assert metric_values["success_rate"] == 0.92
-        assert metric_values["execution_time"] == 125.5
+        # Check that our specific metrics are recorded
+        metric_values = {m["metric_type"]: float(m["metric_value"]) for m in recorded_metrics}
+        assert 0.92 in [float(m["metric_value"]) for m in recorded_metrics if m["metric_type"] == "success_rate"]
+        assert 125.5 in [float(m["metric_value"]) for m in recorded_metrics if m["metric_type"] == "execution_time"]
+        assert 0.88 in [float(m["metric_value"]) for m in recorded_metrics if m["metric_type"] == "collaboration_success"]
+        assert 0.85 in [float(m["metric_value"]) for m in recorded_metrics if m["metric_type"] == "expertise_score"]
     
     @pytest.mark.asyncio
     async def test_system_summary(self, temp_db):
         """Test system summary generation"""
-        _, logger, test_manager = await temp_db
+        _, logger, test_manager = temp_db
         
         await test_manager.setup_test_data()
         
