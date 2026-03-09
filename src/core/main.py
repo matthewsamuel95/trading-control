@@ -13,9 +13,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 # Import system components
 from ..system.professional_trading_orchestrator import create_professional_orchestrator
-from .stateful_logging_system import create_stateful_logging_system
-from .logger import get_logger, setup_logging
 from .config import get_settings
+from .logger import get_logger, setup_logging
+from .stateful_logging_system import create_stateful_logging_system
 
 logger = get_logger(__name__)
 
@@ -96,11 +96,11 @@ async def get_app():
     async with platform.lifespan():
         # Create simple FastAPI app for testing
         app = FastAPI(title="Trading Control Platform")
-        
+
         @app.get("/health")
         async def health_check():
             return {"status": "healthy", "running": platform.is_running}
-        
+
         yield app
 
 
@@ -108,10 +108,10 @@ async def main():
     """Main application entry point"""
     # Setup logging
     setup_logging()
-    
+
     # Initialize and start platform
     await platform.initialize()
-    
+
     try:
         # Keep platform running
         while platform.is_running:
