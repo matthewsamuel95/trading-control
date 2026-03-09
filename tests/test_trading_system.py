@@ -11,22 +11,22 @@ import tempfile
 import os
 
 # Import all systems to test
-from stateful_logging_system import (
+from src.core.stateful_logging_system import (
     DatabaseManager, StatefulLogger, TestDatabaseManager,
     LogLevel, EventType, AgentStatus, PerformanceMetric,
     create_stateful_logging_system
 )
-from deterministic_trading_system import (
+from src.agents.deterministic_trading_system import (
     DeterministicTradingSystem, SelfImprovingAgent,
     AgentMetrics, LearningSignal, AgentCommunicationProtocol,
     create_deterministic_trading_system
 )
-from intelligent_learning_system import (
+from src.agents.intelligent_learning_system import (
     CollaborativeLearningDatabase, IntelligentLearningManager,
     DynamicTeamManager, MistakePattern, ExpertiseArea,
     create_intelligent_learning_system
 )
-from professional_trading_orchestrator import (
+from src.system.professional_trading_orchestrator import (
     SupervisorOrchestrator, TradingState, TradingPhase,
     create_professional_orchestrator
 )
@@ -806,7 +806,7 @@ class TestAgent(SelfImprovingAgent):
     
     def __init__(self, agent_id: str):
         # Create minimal dependencies for testing
-        from deterministic_trading_system import AgentCommunicationProtocol, LearningManager, AgentRankingSystem
+        from src.agents.deterministic_trading_system import AgentCommunicationProtocol, LearningManager, AgentRankingSystem
         self.agent_id = agent_id
         self.communication_protocol = AgentCommunicationProtocol()
         self.learning_manager = LearningManager()
@@ -828,7 +828,7 @@ class FailingTestAgent(SelfImprovingAgent):
     """Test agent that always fails for testing error handling"""
     
     def __init__(self, agent_id: str):
-        from deterministic_trading_system import AgentCommunicationProtocol, LearningManager, AgentRankingSystem
+        from src.agents.deterministic_trading_system import AgentCommunicationProtocol, LearningManager, AgentRankingSystem
         self.agent_id = agent_id
         self.communication_protocol = AgentCommunicationProtocol()
         self.learning_manager = LearningManager()
