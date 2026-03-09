@@ -36,7 +36,7 @@ from memory import get_memory_manager
 
 # Import OpenClaw components
 from orchestrator import OpenClawOrchestrator
-from tools import get_tool_registry
+from tools import get_tool_registry, ToolRegistry
 
 logger = get_logger(__name__)
 
